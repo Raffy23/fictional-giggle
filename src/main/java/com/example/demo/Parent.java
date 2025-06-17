@@ -38,6 +38,6 @@ public class Parent {
 
     @NotNull @lombok.NonNull
     @Column(nullable = false)
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Child> children;
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.hibernate.Hibernate;
 import org.hibernate.engine.jdbc.proxy.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,13 @@ public class DemoService {
 
     public List<Parent> parentList() {
         log.info("parentList()");
+        
+        // Required if jpa.open-in-view = false
+        final var list = parentRepository.findAll();
+        for(final var parent : list) {
+            Hibernate.initialize(parent.getChildren());
+        }
+
         return parentRepository.findAll();
     }
 
