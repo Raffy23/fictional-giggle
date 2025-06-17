@@ -12,6 +12,11 @@ import org.hibernate.engine.jdbc.proxy.BlobProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.entitiy.Image;
+import com.example.demo.entitiy.Message;
+import com.example.demo.repository.ImageRepository;
+import com.example.demo.repository.MessageRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,73 +25,83 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional
 public class DemoService {
     @Autowired
-    private ParentRepository parentRepository;
+    private MessageRepository messageRepository;
 
     @Autowired
-    private ChildRepository childRepository;
+    private ImageRepository imageRepository;
 
-    public void generate(String name, int size, String type, int count) {
+    public Message generate(String name, int size, String type, int count) {
         log.info("generate({}, {}, {}, {})", name, size, type, count);
         final var random = new Random();
 
-        final List<Child> children = new ArrayList<>(count);
+        final List<Image> images = new ArrayList<>(count);
         for (var i = 0; i < count; i++) {
             final byte[] bytes = new byte[size];
             random.nextBytes(bytes);
 
             final var blob = BlobProxy.generateProxy(bytes);
 
-            children.add(Child.of(type, blob));
+            images.add(Image.of(type, blob));
         }
 
-        final var parent = Parent.of(name, children);
+        final var message = Message.of(name, images);
+        messageRepository.save(message);
 
-        childRepository.saveAll(children);
-        parentRepository.save(parent);
+        // Force GC after generation of a lot of data.
+        Runtime.getRuntime().gc();
 
-        log.info("created Parent: {}", parent.getId());
+        return message;
     }
 
-    public List<Parent> parentList() {
-        log.info("parentList()");
-        
-        // Required if jpa.open-in-view = false
-        final var list = parentRepository.findAll();
-        for(final var parent : list) {
-            Hibernate.initialize(parent.getChildren());
-        }
-
-        return parentRepository.findAll();
+    public List<Message> getMessageOverviewList() {
+        log.info("getMessageOverviewList()");
+        return messageRepository.findAll();
     }
 
-    public int getChildrenCount(Long id) {
-        log.info("getChildrenCount({})", id);
+    public Message getMessageDetails(Long id) {
+        log.info("getMessageDetails({})", id);
 
-        final var parent = parentRepository.getReferenceById(id);
-        return parent.getChildren().size();
+        final var message = messageRepository.getReferenceById(id);
+        Hibernate.initialize(message.getImages());
+
+        return message;
     }
 
-    public long getChildSize(Long id) throws SQLException {
-        log.info("getChildSize({})", id);
+    public long getImageSize(Long id) throws SQLException {
+        log.info("getImageSize({})", id);
 
-        final var child = childRepository.getReferenceById(id);
+        final var child = imageRepository.getReferenceById(id);
         return child.getData().length();
     }
+
+    public String getImageType(Long id) {
+        log.info("getImageType({})", id);
+
+        return imageRepository.getReferenceById(id).getType();
+    }
+
+    public List<Image> getImages() {
+        log.info("getImages()");
+
+        return imageRepository.findAll();
+    }
+
+    //region Child Data streaming / retrieval
 
     public static record ChildContentBytes(String type, byte[] data) {
     }
 
-    public ChildContentBytes getChildContent(Long id) throws SQLException, IOException {
-        log.info("getChildContent({})", id);
+    public ChildContentBytes getImageData(Long id) throws SQLException, IOException {
+        log.info("getImageData({})", id);
 
-        final var child = childRepository.getReferenceById(id);
-        final var inputStream = child.getData().getBinaryStream();
+        final var image = imageRepository.getReferenceById(id);
+        final var inputStream = image.getData().getBinaryStream();
 
-        final var data = new byte[(int) child.getData().length()];
+        final var data = new byte[(int) image.getData().length()];
         inputStream.read(data);
         inputStream.close();
 
-        return new ChildContentBytes(child.getType(), data);
+        return new ChildContentBytes(image.getType(), data);
     }
 
     @FunctionalInterface
@@ -97,16 +112,18 @@ public class DemoService {
     public static record ChildContentStream(String type, OutputStreamCallback<OutputStream> stream) {
     }
 
-    public ChildContentStream streamChildContent(Long id) throws SQLException, IOException {
-        log.info("streamChildContent({})", id);
-        
-        final var child = childRepository.getReferenceById(id);
-        final var inputStream = child.getData().getBinaryStream();
+    public ChildContentStream streamImageData(Long id) throws SQLException, IOException {
+        log.info("streamImageData({})", id);
 
-        return new ChildContentStream(child.getType(), (outputStream) -> {
+        final var image = imageRepository.getReferenceById(id);
+        final var inputStream = image.getData().getBinaryStream();
+
+        return new ChildContentStream(image.getType(), (outputStream) -> {
             inputStream.transferTo(outputStream);
             inputStream.close();
         });
     }
+
+    // endregion
 
 }

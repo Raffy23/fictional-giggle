@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.entitiy;
 
 import java.sql.Blob;
 
@@ -26,8 +26,8 @@ import lombok.ToString;
 @RequiredArgsConstructor(staticName = "of")
 @EqualsAndHashCode(exclude = "data")
 @Entity
-@Table(name = "Child")
-public class Child {
+@Table(name = "Image")
+public class Image {
     @Id
     @GeneratedValue
     private Long id;

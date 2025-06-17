@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.entitiy;
 
 import java.util.List;
 
@@ -26,8 +26,8 @@ import lombok.ToString;
 @RequiredArgsConstructor(staticName = "of")
 @EqualsAndHashCode
 @Entity
-@Table(name = "Parent")
-public class Parent {
+@Table(name = "Message")
+public class Message {
     @Id
     @GeneratedValue
     private Long id;
@@ -39,5 +39,5 @@ public class Parent {
     @NotNull @lombok.NonNull
     @Column(nullable = false)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Child> children;
+    private List<Image> images;
 }

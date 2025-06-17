@@ -4,12 +4,20 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 
+import com.example.demo.entitiy.Image;
+import com.example.demo.entitiy.Message;
+import com.example.demo.model.ImageDto;
+import com.example.demo.model.MessageDetailsDto;
+import com.example.demo.model.MessageDto;
+
 @Mapper(componentModel = "spring")
 public interface DtoMapper {
 
-    ChildDTO childToChildDto(Child child);
+    ImageDto imageToImageDto(Image image);
 
-    ParentDTO parentToParentDto(Parent parent);
+    MessageDetailsDto messageToMessageDto(Message message);
     
-    List<ParentDTO> parentListToParentDtoList(List<Parent> parents);
+    List<MessageDto> messageListToMessageDtoList(List<Message> messages);
+
+    List<ImageDto> imageListToImageDtoList(List<Image> images);
 }
