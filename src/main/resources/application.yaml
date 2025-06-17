@@ -12,7 +12,7 @@ spring:
     open-in-view: false
     hibernate:
       generate-ddl: true
-      ddl-auto: update 
+      ddl-auto: update
   h2:
     console:
       enabled: true

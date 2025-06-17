@@ -94,7 +94,7 @@ public class DemoService {
     public ChildContentBytes getImageData(Long id) throws SQLException, IOException {
         log.info("getImageData({})", id);
 
-        final var image = imageRepository.getReferenceById(id);
+        final var image = imageRepository.getReferenceByIdWithData(id);
         final var inputStream = image.getData().getBinaryStream();
 
         final var data = new byte[(int) image.getData().length()];
@@ -115,7 +115,7 @@ public class DemoService {
     public ChildContentStream streamImageData(Long id) throws SQLException, IOException {
         log.info("streamImageData({})", id);
 
-        final var image = imageRepository.getReferenceById(id);
+        final var image = imageRepository.getReferenceByIdWithData(id);
         final var inputStream = image.getData().getBinaryStream();
 
         return new ChildContentStream(image.getType(), (outputStream) -> {

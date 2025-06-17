@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -30,16 +32,15 @@ public class DemoEndpoint {
     @Autowired
     private DtoMapper mapper;
 
-    @GetMapping("/gen")
-    public ResponseEntity<Void> generate(
+    @RequestMapping(path = {"/generate"}, method = {RequestMethod.GET, RequestMethod.POST})
+    public MessageDetailsDto generate(
             @RequestParam(value = "name", defaultValue = "World") String name,
             @RequestParam(value = "size", defaultValue = "512") Integer size,
             @RequestParam(value = "type", defaultValue = "application/octet-stream") String type,
             @RequestParam(value = "count", defaultValue = "1") Integer count) {
         log.info("GET /gen");
-        service.generate(name, size, type, count);
-
-        return ResponseEntity.ok().build();
+        
+        return mapper.messageToMessageDto(service.generate(name, size, type, count));
     }
 
     @GetMapping("/message")
@@ -82,7 +83,7 @@ public class DemoEndpoint {
 
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename={}.bin", id))
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%d.bin", id))
                 .contentType(MediaType.valueOf(image.type()))
                 .body(image.stream()::accept);
     }
@@ -97,6 +98,7 @@ public class DemoEndpoint {
 
         return ResponseEntity
                 .ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%d.bin", id))
                 .contentType(MediaType.valueOf(image.type()))
                 .body(image.data());
     }
