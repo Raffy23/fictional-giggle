@@ -32,21 +32,25 @@ public class DemoService {
     @Autowired
     private ImageRepository imageRepository;
 
-    public Message generate(String name, int size, String type, int count) {
-        log.info("generate({}, {}, {}, {})", name, size, type, count);
+    public Message generate(String title, String summary, List<Integer> sizes) {
+        log.info("generate({}, {}, {})", title, summary, sizes);
         final var random = new Random();
 
-        final List<Image> images = new ArrayList<>(count);
-        for (var i = 0; i < count; i++) {
+        final List<Image> images = new ArrayList<>(sizes.size());
+        for (final var size : sizes) {
             final byte[] bytes = new byte[size];
             random.nextBytes(bytes);
 
             final var blob = BlobProxy.generateProxy(bytes);
 
-            images.add(Image.of(type, "<generated>", blob));
+            images.add(
+                    Image.of(
+                            "application/octet-stream",
+                            "generated.bin",
+                            blob));
         }
 
-        final var message = Message.of(name, "<generated>", "<generated>", images);
+        final var message = Message.of(title, summary, "<generated>", images);
         messageRepository.save(message);
 
         // Force GC after generation of a lot of data.
@@ -110,8 +114,6 @@ public class DemoService {
         return imageRepository.findAll();
     }
 
-    // region Child Data streaming / retrieval
-
     public static record ChildContentBytes(String type, String name, byte[] data) {
     }
 
@@ -147,7 +149,4 @@ public class DemoService {
             inputStream.close();
         });
     }
-
-    // endregion
-
 }

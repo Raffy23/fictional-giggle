@@ -21,6 +21,9 @@ import com.example.demo.model.GenerateMessageDto;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The ViewEndpoint controller is used for Thymeleaf views / endpoints
+ */
 @Slf4j
 @Controller
 public class ViewEndpoint {
@@ -66,7 +69,7 @@ public class ViewEndpoint {
 
     @PostMapping(path = "/message/:generate", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE })
     public String generate(GenerateMessageDto dto) {
-        service.generate(dto.title(), dto.size(), "application/octet-stream", 1);
+        service.generate(dto.title(), dto.summary(), List.of(dto.size()));
 
         return "redirect:/";
     }

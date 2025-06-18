@@ -24,6 +24,10 @@ import com.example.demo.model.MessageDto;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The ApiEndpoint controller exposes a Rest API that can be used to interact with 
+ * the service.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/")
@@ -38,12 +42,11 @@ public class ApiEndpoint {
     @RequestMapping(path = { "/generate" }, method = { RequestMethod.GET, RequestMethod.POST })
     public MessageDetailsDto generate(
             @RequestParam(value = "name", defaultValue = "World") String name,
-            @RequestParam(value = "size", defaultValue = "512") Integer size,
-            @RequestParam(value = "type", defaultValue = "application/octet-stream") String type,
-            @RequestParam(value = "count", defaultValue = "1") Integer count) {
+            @RequestParam(value = "size", defaultValue = "1024") Integer size,
+            @RequestParam(value = "type", defaultValue = "application/octet-stream") String type) {
         log.info("GET /gen");
 
-        return mapper.messageToMessageDto(service.generate(name, size, type, count));
+        return mapper.messageToMessageDto(service.generate(name, "<generated>", List.of(size)));
     }
 
     @GetMapping("/message")
