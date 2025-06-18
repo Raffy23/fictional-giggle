@@ -14,10 +14,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.entitiy.Image;
 import com.example.demo.entitiy.Message;
+import com.example.demo.model.CreateMessageDto;
 import com.example.demo.repository.ImageRepository;
 import com.example.demo.repository.MessageRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,16 +43,38 @@ public class DemoService {
 
             final var blob = BlobProxy.generateProxy(bytes);
 
-            images.add(Image.of(type, blob));
+            images.add(Image.of(type, "<generated>", blob));
         }
 
-        final var message = Message.of(name, images);
+        final var message = Message.of(name, "<generated>", "<generated>", images);
         messageRepository.save(message);
 
         // Force GC after generation of a lot of data.
         Runtime.getRuntime().gc();
 
         return message;
+    }
+
+    public static record CreateImageDto(String type, String name, byte[] data) {
+    }
+
+    public void createMessage(@Valid CreateMessageDto message, List<CreateImageDto> images) {
+        final List<Image> imageEntities = new ArrayList<>(images.size());
+        for (final var imageDto : images) {
+            imageEntities.add(
+                    Image.of(
+                            imageDto.type(),
+                            imageDto.name(),
+                            BlobProxy.generateProxy(imageDto.data())));
+        }
+
+        final var messageEntity = Message.of(
+                message.getTitle(),
+                message.getSummary(),
+                message.getMessage(),
+                imageEntities);
+
+        messageRepository.save(messageEntity);
     }
 
     public List<Message> getMessageOverviewList() {
@@ -86,9 +110,9 @@ public class DemoService {
         return imageRepository.findAll();
     }
 
-    //region Child Data streaming / retrieval
+    // region Child Data streaming / retrieval
 
-    public static record ChildContentBytes(String type, byte[] data) {
+    public static record ChildContentBytes(String type, String name, byte[] data) {
     }
 
     public ChildContentBytes getImageData(Long id) throws SQLException, IOException {
@@ -101,7 +125,7 @@ public class DemoService {
         inputStream.read(data);
         inputStream.close();
 
-        return new ChildContentBytes(image.getType(), data);
+        return new ChildContentBytes(image.getType(), image.getName(), data);
     }
 
     @FunctionalInterface
@@ -109,7 +133,7 @@ public class DemoService {
         void accept(T t) throws IOException;
     }
 
-    public static record ChildContentStream(String type, OutputStreamCallback<OutputStream> stream) {
+    public static record ChildContentStream(String type, String name, OutputStreamCallback<OutputStream> stream) {
     }
 
     public ChildContentStream streamImageData(Long id) throws SQLException, IOException {
@@ -118,7 +142,7 @@ public class DemoService {
         final var image = imageRepository.getReferenceByIdWithData(id);
         final var inputStream = image.getData().getBinaryStream();
 
-        return new ChildContentStream(image.getType(), (outputStream) -> {
+        return new ChildContentStream(image.getType(), image.getName(), (outputStream) -> {
             inputStream.transferTo(outputStream);
             inputStream.close();
         });

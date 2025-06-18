@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.NonNull;
 
 @Setter
 @Getter
@@ -32,11 +32,19 @@ public class Message {
     @GeneratedValue
     private Long id;
 
-    @NotNull @lombok.NonNull
-    @Column(nullable = false)
-    private String name;
+    @NonNull
+    @Column(nullable = false, length = 32)
+    private String title;
 
-    @NotNull @lombok.NonNull
+    @NonNull
+    @Column(nullable = false, length = 256)
+    private String summary;
+
+    @NonNull
+    @Column(nullable = false, length = 2048)
+    private String message;
+
+    @NonNull
     @Column(nullable = false)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;

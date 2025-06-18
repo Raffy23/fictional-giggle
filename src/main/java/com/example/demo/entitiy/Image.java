@@ -10,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -19,6 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.NonNull;
 
 @Setter
 @Getter
@@ -34,11 +34,15 @@ public class Image {
     @GeneratedValue
     private Long id;
 
-    @NotNull @lombok.NonNull
+    @NonNull
     @Column(nullable = false)
     private String type;
 
-    @NotNull @lombok.NonNull
+    @NonNull
+    @Column(nullable = false)
+    private String name; 
+
+    @NonNull
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(nullable = false)

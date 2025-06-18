@@ -14,7 +14,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
      * @return a Image entity
      * @see EntityManager#getReference(Class, Object) for details on when an exception is thrown.
      */
-    @Query("SELECT new Image(id, type, data) FROM Image WHERE id= ?1")
+    @Query("SELECT new Image(id, type, name, data) FROM Image WHERE id= ?1")
     Image getReferenceByIdWithData(Long id);
 
 }

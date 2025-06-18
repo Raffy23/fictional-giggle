@@ -1,0 +1,30 @@
+<dialog th:fragment="dialog" id="message-details" style="min-width: 250px;">
+    <h2>Details: <small th:text="${message.title}"></small></h2>
+
+    <div class="dialog__body">
+        <div>
+            <h3>Summary</h3>
+            <span th:text="${message.summary}"></span>
+        </div>
+
+        <div>
+            <h3>Text</h3>
+            <span th:text="${message.message}"></span>
+        </div>
+
+        <div>
+            <h3>Images</h3>
+            <ul>
+                <li th:each="image : ${message.images}">
+                    <span th:text="${image.name}"></span>
+                    <a th:href="${'/api/v1/image/' + image.id + '/:stream'}">Stream</a>
+                    <a th:href="${'/api/v1/image/' + image.id + '/:materialize'}">Download</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="form__buttons">
+            <input type="reset" value="Close" onclick="document.querySelector('dialog[id=message-details]').close()">
+        </div>
+    </div>
+</dialog>

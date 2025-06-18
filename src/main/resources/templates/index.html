@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" th:href="@{/css/reset.css}" type="text/css">
+    <link rel="stylesheet" th:href="@{/css/app.css}" type="text/css">
+    <title>Spring Boot Blob Streaming</title>
+
+    <script type="text/javascript">
+        const getMessageDetails = (id) => {
+            void fetch(`/message/${id}`)
+                .then((resp) => resp.text())
+                .then((html) => document.querySelector('dialog[id=message-details]').outerHTML = html)
+                .then(() => document.querySelector('dialog[id=message-details]').showModal())
+                .catch((err) => alert(err.message));
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <h1>Spring Boot Blob Streaming</h1>
+        <div>
+            <button onclick="document.querySelector('dialog[id=generate-message]').showModal()">Generate</button>
+            <button onclick="document.querySelector('dialog[id=new-message]').showModal()">New</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="card" th:each="message : ${messages}">
+            <h2 th:text="${message.title}"></h2>
+            <div class="card__body">
+                <span th:text="${message.summary}"></span>
+            </div>
+            <div class="card__actions">
+                <button th:attr="onclick=|getMessageDetails(${message.id})|">More</button>
+            </div>
+        </div>
+    </main>
+
+    <dialog closedby="any" id="new-message">
+        <h2>New Message</h2>
+        <form action="#" enctype="multipart/form-data" th:action="@{/message}" th:object="${message}" method="post">
+            <fieldset>
+                <label for="title">Title<sub>*</sub></label>
+                <input autofocus type="text" th:field="*{title}" id="title" placeholder="Title" required>
+                <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+            </fieldset>
+            <fieldset>
+                <label for="summary">Summary<sub>*</sub></label>
+                <input type="text" th:field="*{summary}" id="summary" required>
+                <span th:if="${#fields.hasErrors('summary')}" th:errors="*{summary}"></span>
+            </fieldset>
+
+            <fieldset>
+                <label for="message">Message<sub>*</sub></label>
+                <textarea th:field="*{message}" id="message" required></textarea>
+                <span th:if="${#fields.hasErrors('message')}" th:errors="*{message}"></span>
+            </fieldset>
+
+            <fieldset>
+                <label for="images">Images</label>
+                <input type="file" multiple name="images">
+            </fieldset>
+
+            <div class="form__buttons">
+                <input type="submit" value="Create">
+                <input type="reset" value="Close" onclick="document.querySelector('dialog[id=new-message]').close()">
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="message-details">
+    </dialog>
+
+    <dialog closedby="any" id="generate-message">
+        <h2>Generate Message</h2>
+        <form action="#" th:action="@{/message/:generate}" th:object="${gen_message}" method="post">
+            <fieldset>
+                <label for="title">Title<sub>*</sub></label>
+                <input autofocus type="text" th:field="*{title}" id="title" placeholder="Title" required>
+            </fieldset>
+            <fieldset>
+                <label for="summary">Summary<sub>*</sub></label>
+                <input autofocus type="text" th:field="*{summary}" id="summary" placeholder="Summary" required>
+            </fieldset>
+            <fieldset>
+                <label for="size">File Size<sub>*</sub></label>
+                <input autofocus type="number" th:field="*{size}" id="size" placeholder="0" required>
+                <span class="hint">Hint: File size in Bytes</span>
+            </fieldset>
+
+            <div class="form__buttons">
+                <input type="submit" value="Generate">
+                <input type="reset" value="Close" onclick="document.querySelector('dialog[id=generate-message]').close()">
+            </div>
+        </form>
+    </dialog>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.endpoint;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import com.example.demo.DemoService;
+import com.example.demo.DtoMapper;
 import com.example.demo.model.ImageDto;
 import com.example.demo.model.MessageDetailsDto;
 import com.example.demo.model.MessageDto;
@@ -24,7 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
-public class DemoEndpoint {
+@RequestMapping("/api/v1/")
+public class ApiEndpoint {
 
     @Autowired
     private DemoService service;
@@ -32,14 +35,14 @@ public class DemoEndpoint {
     @Autowired
     private DtoMapper mapper;
 
-    @RequestMapping(path = {"/generate"}, method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(path = { "/generate" }, method = { RequestMethod.GET, RequestMethod.POST })
     public MessageDetailsDto generate(
             @RequestParam(value = "name", defaultValue = "World") String name,
             @RequestParam(value = "size", defaultValue = "512") Integer size,
             @RequestParam(value = "type", defaultValue = "application/octet-stream") String type,
             @RequestParam(value = "count", defaultValue = "1") Integer count) {
         log.info("GET /gen");
-        
+
         return mapper.messageToMessageDto(service.generate(name, size, type, count));
     }
 
@@ -83,7 +86,7 @@ public class DemoEndpoint {
 
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%d.bin", id))
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", image.name()))
                 .contentType(MediaType.valueOf(image.type()))
                 .body(image.stream()::accept);
     }
@@ -98,7 +101,7 @@ public class DemoEndpoint {
 
         return ResponseEntity
                 .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%d.bin", id))
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", image.name()))
                 .contentType(MediaType.valueOf(image.type()))
                 .body(image.data());
     }
